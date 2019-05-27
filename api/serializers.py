@@ -1,61 +1,77 @@
 from rest_framework import serializers
 
-from restaurants.models import (
+from .models import (
 	Restaurant,
 	Day,
 	OperatingTime,
 	Category,
 	Item,
-	Queue
+	Queue,
+	RestaurantUser
 )
 
+from rest_framework_jwt.settings import api_settings
 from django.contrib.auth.models import User
 
+class UserSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = User
+		fields = ['id', 'first_name', 'last_name']
+
 class QueueListSerializer(serializers.ModelSerializer):
+
+	user = UserSerializer()
 	class Meta:
 		model = Queue
 		fields = '__all__'
+
 
 class OperatingTimeListSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = OperatingTime
 		fields = '__all__'
 
+
 class RestaurantListSerializer(serializers.ModelSerializer):
-	
+	operatingtime = OperatingTimeListSerializer(many = True)
+	class Meta:
+		model = Restaurant
+		fields = '__all__'
+
+	def get_operatingtime(self, obj):
+		return obj.operatingtime_set.all()
+
+class ItemListSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Item
+		fields = '__all__'
+
+class CategoryListSerializer(serializers.ModelSerializer):
+	item = ItemListSerializer(many = True)
+	class Meta:
+		model = Category
+		fields = '__all__'
+	def get_item(self, obj):
+		return obj.item_set.all()
+
+
+class RestaurantDetailSerializer(serializers.ModelSerializer):
+	category = CategoryListSerializer(many = True)
 	queue = QueueListSerializer(many = True)
 	operatingtime = OperatingTimeListSerializer(many = True)
-
 
 	class Meta:
 		model = Restaurant
 		fields = '__all__'
+
+	def get_category(self, obj):
+		return obj.category_set.all()
 
 	def get_queue(self, obj):
 		return obj.queue_set.all()
 
 	def get_operatingtime(self, obj):
 		return obj.operatingtime_set.all()
-
-class CategoryListSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = Category
-		fields = '__all__'
-
-class ItemListSerializer(serializers.ModelSerializer):
-	category = CategoryListSerializer()
-	class Meta:
-		model = Item
-		fields = '__all__'
-
-	def get_category(self, obj):
-		return obj.category_set.all()
-
-class RestaurantDetailSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = Restaurant
-		fields = '__all__'
-
 
 
 class QueueCreateSerializer(serializers.ModelSerializer):
@@ -72,10 +88,6 @@ class QueueCreateSerializer(serializers.ModelSerializer):
 		enter_q.save()
 		return validated_data
 
-class QueueListSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = Queue
-		fields ='__all__'
 
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -95,11 +107,11 @@ class UserCreateSerializer(serializers.ModelSerializer):
         new_user.save()
         return validated_data
 
-
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
     token = serializers.CharField(allow_blank=True, read_only=True)
+    restaurant = serializers.CharField(allow_blank= True, read_only = True)
 
     def validate(self, data):
         my_username = data.get('username')
@@ -107,11 +119,19 @@ class UserLoginSerializer(serializers.Serializer):
 
         try:
             user_obj = User.objects.get(username=my_username)
+
         except:
             raise serializers.ValidationError("This username does not exist")
 
         if not user_obj.check_password(my_password):
             raise serializers.ValidationError("Incorrect username/password")
+
+        try:
+        	restaurant_user = RestaurantUser.objects.get(user = user_obj)
+        	data['restaurant']= restaurant_user.id
+
+        except:
+        	pass
 
         jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
         jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
@@ -119,9 +139,9 @@ class UserLoginSerializer(serializers.Serializer):
         payload = jwt_payload_handler(user_obj)
         token = jwt_encode_handler(payload)
 
+        
         data["token"] = token
 
-        return data
         return data
 
 

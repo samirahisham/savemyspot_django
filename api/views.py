@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views import View
-
+from rest_framework.response import Response
 from rest_framework.generics import (
 	ListAPIView,
 	RetrieveAPIView,
@@ -20,18 +20,21 @@ from .serializers import (
 	QueueCreateSerializer,
 	OperatingTimeListSerializer,
 	ItemListSerializer,
-	RestaurantDetailSerializer
+	RestaurantDetailSerializer,
+	QueueListSerializer
 	
 )
-from restaurants.models import (
+from .models import (
 	Restaurant,
 	Queue,
-	OperatingTime,
-	Item
+	RestaurantUser
 
 )
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from django.contrib.auth.models import User
 from rest_framework.response import Response
 from django.http import Http404
+
 
 class RestraurantListView(ListAPIView):
 	queryset = Restaurant.objects.all()
@@ -39,38 +42,58 @@ class RestraurantListView(ListAPIView):
 
 class RestaurauntDetailView(RetrieveAPIView):
 	queryset = Restaurant.objects.all()
-	serializer_class = RestaurantListSerializer
+	serializer_class = RestaurantDetailSerializer
 	lookup_field = 'id'
 	lookup_url_kwarg = 'restaurant_id'
 
-class ItemListView(ListAPIView):
-	queryset = Item.objects.all()
-	serializer_class= ItemListSerializer
+class QueueView(APIView):
+	def get(self, request):
+		obj = request.data
+		restaurant = Restaurant.objects.get(id = obj['restaurant'])
+		queue = Queue.objects.filter(restaurant= restaurant)
+		return Response(QueueListSerializer(queue, many=True).data)
+
+	def post(self, request):
+		obj = request.data
+		user = User.objects.get(id = obj['user'])
+		restaurant = Restaurant.objects.get(id = obj['restaurant'])
+		queue_obj = Queue(user = user, restaurant = restaurant, guests = obj['guests'] )
+		queue_obj.increment_position()
+		queue_obj.save()
+		return Response(RestaurantDetailSerializer(restaurant).data)
 
 
-class OperatingTimeListView(ListAPIView):
-	queryset = OperatingTime.objects.all()
-	serializer_class = OperatingTimeListSerializer
+	def delete(self, request, queue_id):
+		queue = Queue.objects.get(id= queue_id)
+		restaurant_queues = Queue.objects.filter(restaurant = queue.restaurant.id).order_by('position')
+		restaurant = Restaurant.objects.get(id = queue.restaurant.id)
+		pos = queue.position
+		queue.delete()
 
-class QueueCreateView(CreateAPIView):
-	serializer_class = QueueCreateSerializer
+		for q in range(0 , len(restaurant_queues)):
+			if restaurant_queues[q].position > pos:
+				restaurant_queues[q].position -= 1
+				restaurant_queues[q].save()
 
-class QueueRemovalView(DestroyAPIView):
-	queryset = Queue.objects.all()
-	serializer_class = QueueCreateSerializer
-	lookup_field = 'id'
-	lookup_url_kwarg = 'queue_id'
 
-	def perform_destroy(self, instance):
-		queues = Queue.objects.filter(restaurant = instance.restaurant).order_by('position')
-		pos = instance.position
-		instance.delete()
+		return Response(RestaurantDetailSerializer(restaurant).data)
 
-		for q in range(0 , len(queues)):
-			if queues[q].position > pos:
-				queues[q].position -= 1
-				queues[q].save()
 
+# class QueueRemovalView(DestroyAPIView):
+# 	queryset = Queue.objects.all()
+# 	serializer_class = QueueCreateSerializer
+# 	lookup_field = 'id'
+# 	lookup_url_kwarg = 'queue_id'
+
+# 	def perform_destroy(self, instance):
+# 		queues = Queue.objects.filter(restaurant = instance.restaurant).order_by('position')
+# 		pos = instance.position
+# 		instance.delete()
+
+# 		for q in range(0 , len(queues)):
+# 			if queues[q].position > pos:
+# 				queues[q].position -= 1
+# 				queues[q].save()
 
 
 class UserCreateAPIView(CreateAPIView):
