@@ -18,13 +18,6 @@ class UserSerializer(serializers.ModelSerializer):
 		model = User
 		fields = ['id', 'first_name', 'last_name']
 
-class QueueListSerializer(serializers.ModelSerializer):
-
-	user = UserSerializer()
-	class Meta:
-		model = Queue
-		fields = '__all__'
-
 
 class OperatingTimeListSerializer(serializers.ModelSerializer):
 	class Meta:
@@ -34,12 +27,21 @@ class OperatingTimeListSerializer(serializers.ModelSerializer):
 
 class RestaurantListSerializer(serializers.ModelSerializer):
 	operatingtime = OperatingTimeListSerializer(many = True)
+	queue = serializers.SerializerMethodField()
 	class Meta:
 		model = Restaurant
 		fields = '__all__'
 
-	def get_operatingtime(self, obj):
-		return obj.operatingtime_set.all()
+	def get_queue(self, obj):
+		return obj.queue.count() 
+
+class QueueListSerializer(serializers.ModelSerializer):
+	restaurant = RestaurantListSerializer()
+	user = UserSerializer()
+	class Meta:
+		model = Queue
+		fields = '__all__'
+
 
 class ItemListSerializer(serializers.ModelSerializer):
 	class Meta:
@@ -51,8 +53,6 @@ class CategoryListSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Category
 		fields = '__all__'
-	def get_item(self, obj):
-		return obj.item_set.all()
 
 
 class RestaurantDetailSerializer(serializers.ModelSerializer):
@@ -64,21 +64,11 @@ class RestaurantDetailSerializer(serializers.ModelSerializer):
 		model = Restaurant
 		fields = '__all__'
 
-	def get_category(self, obj):
-		return obj.category_set.all()
-
-	def get_queue(self, obj):
-		return obj.queue_set.all()
-
-	def get_operatingtime(self, obj):
-		return obj.operatingtime_set.all()
-
 
 class QueueCreateSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Queue
 		exclude = ['position',]
-
 
 	def create(self, validated_data):
 		restaurant = validated_data['restaurant']
@@ -87,7 +77,6 @@ class QueueCreateSerializer(serializers.ModelSerializer):
 		enter_q.increment_position()
 		enter_q.save()
 		return validated_data
-
 
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)

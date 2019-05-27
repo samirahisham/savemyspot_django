@@ -18,10 +18,9 @@ from .serializers import (
 from .serializers import (
 	RestaurantListSerializer,
 	QueueCreateSerializer,
-	OperatingTimeListSerializer,
-	ItemListSerializer,
 	RestaurantDetailSerializer,
 	QueueListSerializer
+	
 	
 )
 from .models import (
@@ -46,11 +45,12 @@ class RestaurauntDetailView(RetrieveAPIView):
 	lookup_field = 'id'
 	lookup_url_kwarg = 'restaurant_id'
 
+
 class QueueView(APIView):
 	def get(self, request):
 		obj = request.data
-		restaurant = Restaurant.objects.get(id = obj['restaurant'])
-		queue = Queue.objects.filter(restaurant= restaurant)
+		print(request.user)
+		queue = Queue.objects.filter(user= request.user.id)
 		return Response(QueueListSerializer(queue, many=True).data)
 
 	def post(self, request):
