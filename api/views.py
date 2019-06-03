@@ -49,8 +49,8 @@ class RestaurauntDetailView(RetrieveAPIView):
 class QueueView(APIView):
 	def get(self, request):
 		obj = request.data
-		print(request.user)
 		queue = Queue.objects.filter(user= request.user.id)
+
 		return Response(QueueListSerializer(queue, many=True).data)
 
 	def post(self, request):
@@ -60,6 +60,7 @@ class QueueView(APIView):
 		queue_obj = Queue(user = user, restaurant = restaurant, guests = obj['guests'] )
 		queue_obj.increment_position()
 		queue_obj.save()
+
 		return Response(RestaurantDetailSerializer(restaurant).data)
 
 
@@ -75,25 +76,7 @@ class QueueView(APIView):
 				restaurant_queues[q].position -= 1
 				restaurant_queues[q].save()
 
-
 		return Response(RestaurantDetailSerializer(restaurant).data)
-
-
-# class QueueRemovalView(DestroyAPIView):
-# 	queryset = Queue.objects.all()
-# 	serializer_class = QueueCreateSerializer
-# 	lookup_field = 'id'
-# 	lookup_url_kwarg = 'queue_id'
-
-# 	def perform_destroy(self, instance):
-# 		queues = Queue.objects.filter(restaurant = instance.restaurant).order_by('position')
-# 		pos = instance.position
-# 		instance.delete()
-
-# 		for q in range(0 , len(queues)):
-# 			if queues[q].position > pos:
-# 				queues[q].position -= 1
-# 				queues[q].save()
 
 
 class UserCreateAPIView(CreateAPIView):

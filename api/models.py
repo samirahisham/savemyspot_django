@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-##change it to incorporate more than preselected types
 class RestaurantType(models.Model):
 	RESTAURANT_TYPES = (
 		('Japanese', 'Japanese'),
@@ -49,16 +48,9 @@ class OperatingTime(models.Model):
 	restaurant = models.ForeignKey(Restaurant, on_delete = models.CASCADE, related_name ='operatingtime')
 
 class Category(models.Model):
-	MENU_TYPES = (
-		('Breakfast', 'Breakfast'),
-		('Lunch' , 'Lunch'),
-		('Dinner' , 'Dinner'),
-		('Brunch' , 'Brunch'),
-		('Dessert', 'Dessert')
-	)
-
 	restaurant = models.ForeignKey(Restaurant, on_delete= models.CASCADE, related_name= 'category')
-	name = models.CharField(max_length = 20, choices = MENU_TYPES)
+	name = models.CharField(max_length = 100)
+	position = models.IntegerField(null= True)
 
 	def __str__(self):
 		return self.name + " " + self.restaurant.name
