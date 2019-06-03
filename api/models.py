@@ -66,22 +66,6 @@ class Item(models.Model):
 		return self.name
 
 class Queue(models.Model):
-	position = models.IntegerField()
-	user = models.ForeignKey(User, on_delete = models.CASCADE, null = True, blank = True)
-	restaurant = models.ForeignKey(Restaurant, on_delete = models.CASCADE, related_name = 'queue')
-	guests = models.IntegerField()
+	...
 
-	class Meta:
-		unique_together =(('position', 'restaurant'),
-			('restaurant', 'user'))
-
-		ordering = ['-position']
-
-	def increment_position(self):
-		q = Queue.objects.filter(restaurant = self.restaurant)
-
-		if q:
-			self.position = q.first().position + 1
-		else:
-			self.position = 1
-		
+	
