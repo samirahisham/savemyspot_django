@@ -26,7 +26,7 @@ SECRET_KEY = '(i0i%&s4f@hmb%$_2*0a-(hy6@!dp^%@u6ywavk3n1h&#*oj$u'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', '104.248.138.63', 'savemyspot-django.codeunicorn.io']
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 # Application definition
@@ -92,24 +92,13 @@ WSGI_APPLICATION = 'q.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'django',
-            'USER': 'django',
-            'PASSWORD': 'be44006884456b6e63f99ed86358d1df',
-            'HOST': 'localhost',
-            'PORT': '',
-        }
-    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -152,3 +141,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+if not DEBUG:
+    from .local_settings import *
