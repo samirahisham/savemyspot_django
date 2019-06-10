@@ -26,7 +26,7 @@ SECRET_KEY = '(i0i%&s4f@hmb%$_2*0a-(hy6@!dp^%@u6ywavk3n1h&#*oj$u'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', '104.248.138.63']
+ALLOWED_HOSTS = ['127.0.0.1', '104.248.138.63', 'savemyspot-django.codeunicorn.io']
 
 
 # Application definition
