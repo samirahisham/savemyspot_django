@@ -12,7 +12,6 @@ class RestaurantType(models.Model):
 	def __str__(self):
 		return self.restaurant
 
-
 class Restaurant(models.Model):
 	name = models.CharField(max_length = 100)
 	picture = models.ImageField(null = True, blank = True)
@@ -64,6 +63,12 @@ class Item(models.Model):
 
 	def __str__(self):
 		return self.name
+
+class Person(models.Model):
+	first_name = models.CharField(max_length  = 100)
+	last_name = models.CharField(max_length = 100)
+	phone_number = models.CharField(max_length = 100)
+
 
 class Queue(models.Model):
 	position = models.IntegerField()
