@@ -24,7 +24,6 @@ class OperatingTimeListSerializer(serializers.ModelSerializer):
 		model = OperatingTime
 		fields = '__all__'
 
-
 class RestaurantListSerializer(serializers.ModelSerializer):
 	operatingtime = OperatingTimeListSerializer(many = True)
 	queue = serializers.SerializerMethodField()
