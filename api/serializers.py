@@ -35,12 +35,14 @@ class RestaurantListSerializer(serializers.ModelSerializer):
 		return obj.queue.count() 
 
 class QueueListSerializer(serializers.ModelSerializer):
-	restaurant = RestaurantListSerializer()
+	restaurant = serializers.SerializerMethodField()
 	user = UserSerializer()
 	class Meta:
 		model = Queue
-		fields = '__all__'
+		fields = ['id', 'user','restaurant', 'position', 'guests']
 
+	def get_restaurant(self, obj):
+		return obj.restaurant.id
 
 class ItemListSerializer(serializers.ModelSerializer):
 	class Meta:
@@ -56,26 +58,19 @@ class CategoryListSerializer(serializers.ModelSerializer):
 
 class RestaurantDetailSerializer(serializers.ModelSerializer):
 	category = CategoryListSerializer(many = True)
-	queue = QueueListSerializer(many = True)
 	operatingtime = OperatingTimeListSerializer(many = True)
 
 	class Meta:
 		model = Restaurant
 		fields = '__all__'
 
-
-class QueueCreateSerializer(serializers.ModelSerializer):
+class QueueUserSerializer(serializers.ModelSerializer):
+	restaurant = RestaurantDetailSerializer()
+	
 	class Meta:
 		model = Queue
-		exclude = ['position',]
+		fields = '__all__'
 
-	def create(self, validated_data):
-		restaurant = validated_data['restaurant']
-		user = validated_data['user']
-		enter_q = Queue(restaurant= restaurant, user = user)
-		enter_q.increment_position()
-		enter_q.save()
-		return validated_data
 
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)

@@ -17,18 +17,17 @@ from .serializers import (
 
 from .serializers import (
 	RestaurantListSerializer,
-	QueueCreateSerializer,
 	RestaurantDetailSerializer,
+	QueueUserSerializer,
 	QueueListSerializer
-	
-	
 )
+
 from .models import (
 	Restaurant,
 	Queue,
 	RestaurantUser
-
 )
+
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from django.contrib.auth.models import User
 from rest_framework.response import Response
@@ -45,11 +44,18 @@ class RestaurauntDetailView(RetrieveAPIView):
 	lookup_field = 'id'
 	lookup_url_kwarg = 'restaurant_id'
 
+class QueueUserListView(ListAPIView):
+	serializer_class = QueueUserSerializer
+
+	def get_queryset(self):
+		if (self.request.user.is_authenticated):
+			return Queue.objects.filter(user = self.request.user)
 
 class QueueView(APIView):
 	def get(self, request):
 		obj = request.data
-		queue = Queue.objects.filter(user= request.user.id)
+		restaurant = Restaurant.objects.get(id = obj['restaurant'])
+		queue = Queue.objects.filter(restaurant= restaurant)
 
 		return Response(QueueListSerializer(queue, many=True).data)
 
