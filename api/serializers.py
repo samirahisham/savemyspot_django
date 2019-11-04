@@ -33,7 +33,7 @@ class RestaurantListSerializer(serializers.ModelSerializer):
 		fields = '__all__'
 
 	def get_queue(self, obj):
-		return obj.queue.count() 
+		return obj.queues.count() 
 
 class QueueListSerializer(serializers.ModelSerializer):
 	restaurant = RestaurantListSerializer()
@@ -57,7 +57,7 @@ class CategoryListSerializer(serializers.ModelSerializer):
 
 class RestaurantDetailSerializer(serializers.ModelSerializer):
 	category = CategoryListSerializer(many = True)
-	queue = QueueListSerializer(many = True)
+	queues = QueueListSerializer(many = True)
 	operatingtime = OperatingTimeListSerializer(many = True)
 
 	class Meta:

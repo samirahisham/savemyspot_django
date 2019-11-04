@@ -24,7 +24,7 @@ class Restaurant(models.Model):
 
 class RestaurantUser(models.Model):
 	restaurant = models.ForeignKey(Restaurant, on_delete= models.CASCADE, null=True,blank =True)
-	user = models.ForeignKey(User, on_delete=models.CASCADE)
+	user = models.OneToOneField(User, on_delete=models.CASCADE)
 
 class Day(models.Model):
 	DAY_CHOICES = (
