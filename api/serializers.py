@@ -57,7 +57,7 @@ class CategoryListSerializer(serializers.ModelSerializer):
 
 class RestaurantDetailSerializer(serializers.ModelSerializer):
 	category = CategoryListSerializer(many = True)
-	queue = QueueListSerializer(many = True)
+	queues = QueueListSerializer(many = True)
 	operatingtime = OperatingTimeListSerializer(many = True)
 
 	class Meta:
