@@ -48,13 +48,29 @@ class RestaurauntDetailView(RetrieveAPIView):
 
 class QueueView(APIView):
 	def get(self, request):
-		...
+		obj = request.data
+		restaurant = Restaurant.objects.get(id = obj['restaurant'])
+		queue = Queue.object.filter(restaurant= restaurant)
+		return Response(QueueListSerializer(queue, many=True).data)
 		
 	def post(self, request):
-		...
+		obj = request.data
+		user = User.object.get(id = obj['user'])
+		restaurant = Restaurant.objects.get(id = obj['restaurant'])
+		queue_obj = Queue(user = user, restaurant = restaurant, guests = obj['guests'] )
+		queue_obj.increment_position()
+		queue_obj.save()
+		return Response(RestaurantListSerializer(restaurant).data)
 		
 	def delete(self, request, queue_id):
-		...
+		queue = Queue.objects.get(id= queue_id)
+		pos = queue.position
+		restaurant_queues = queue.restaurant.queues.filter(position__gt=pos).order_by('position')
+		queue.delete()
+		for queue in restaurant_queues:
+			queue.position -= 1
+			queue.save()
+		return Response(RestaurantDetailSerializer(queue.restaurant).data)
 
 
 class UserCreateAPIView(CreateAPIView):
@@ -70,5 +86,6 @@ class UserLoginAPIView(APIView):
             valid_data = serializer.data
             return Response(valid_data, status=HTTP_200_OK)
         return Response(serializer.errors, HTTP_400_BAD_REQUEST)
+
 
 

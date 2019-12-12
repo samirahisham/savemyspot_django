@@ -134,3 +134,9 @@ class UserLoginSerializer(serializers.Serializer):
         return data
 
 
+class QueueUserSerializer(serializers.ModelSerializer):
+    restaurant = RestaurantDetailSerializer()
+    
+    class Meta:
+        model = Queue
+        fields = '__all__'
